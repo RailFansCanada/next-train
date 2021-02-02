@@ -1,26 +1,105 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import styled from "styled-components";
+import { format, add } from "date-fns";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+type Direction = "to" | "from";
+
+const urlParams = new URLSearchParams(window.location.search);
+const selectedDirection = (urlParams.get("direction") as Direction) ?? "from";
+
+const getData = async (direction: Direction) => {
+  // Use Cyrville for arrivals
+  const stop = direction === "to" ? "3026" : "3027";
+
+  const result = await fetch(
+    `/v2.0/GetNextTripsForStop?appID=${process.env.REACT_APP_APP_ID}&apiKey=${process.env.REACT_APP_API_KEY}&stopNo=${stop}&routeNo=1&format=json`,
+    {}
   );
-}
+
+  const data = await result.json();
+  console.log(data);
+
+  if (data.GetNextTripsForStopResult.Error !== "") {
+    return [];
+  }
+
+  const routes: any = data.GetNextTripsForStopResult.Route.RouteDirection;
+  let route;
+  // Sometimes it's an array, sometimes it's not...
+  if (Array.isArray(routes)) {
+    route = routes.find((r) => {
+      if (direction === "to") {
+        return r.RouteLabel === "Blair";
+      } else {
+        return r.RouteLabel === "Tunney's Pasture";
+      }
+    });
+  } else {
+    route = routes;
+  }
+
+  if (route == null) {
+    return [];
+  }
+
+  const trips: any[] = route.Trips.Trip;
+  if (direction === "from") {
+    return trips.map((trip) => parseInt(trip.AdjustedScheduleTime));
+  } else {
+    // Add 3 minutes of travel time from Cyrville to Blair
+    return trips.map((trip) => parseInt(trip.AdjustedScheduleTime) + 3);
+  }
+};
+
+const Container = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #cc0000;
+  color: #ffffff;
+  width: 100vw;
+  height: 100vh;
+  font-size: 1.2em;
+`;
+
+const App = () => {
+  const [trips, setTrips] = useState<number[]>([]);
+  const [updateTime, setUpdateTime] = useState<Date | null>(null);
+
+  const doUpdate = () => {
+    getData(selectedDirection)
+      .then((result) => {
+        setTrips(result);
+        setUpdateTime(new Date());
+      })
+      .catch((e) => console.error(e));
+  };
+
+  useEffect(() => {
+    doUpdate();
+  }, []);
+
+  useEffect(() => {
+    let timeout = 3 * 60000; // Default 3 minute timeout
+    if (trips.length > 0) {
+      timeout = (trips[0] + 1) * 60000;
+    }
+
+    setTimeout(() => {
+      doUpdate();
+    }, timeout);
+  }, [trips]);
+
+  if (updateTime != null && trips.length > 0) {
+    return (
+      <Container>
+        Next {selectedDirection === "to" ? "Arrival" : "Depature"}:{" "}
+        {format(add(updateTime, { minutes: trips[0] }), "HH:mm")}
+      </Container>
+    );
+  } else {
+    return <Container>No Scheduled Departures</Container>;
+  }
+};
 
 export default App;
