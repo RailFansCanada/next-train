@@ -98,7 +98,7 @@ const App = () => {
   if (updateTime != null && trips.length > 0) {
     return (
       <Container>
-        Next {selectedDirection === "arrival" ? "Arrival" : "Depature"}:{" "}
+        Next {selectedDirection === "arrival" ? "Arrival" : "Departure"}:{" "}
         {format(add(updateTime, { minutes: trips[0] }), "HH:mm")}
       </Container>
     );
