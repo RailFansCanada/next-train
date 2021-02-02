@@ -15,3 +15,10 @@ Run `yarn` to install all required dependencies.
 ## Launching
 
 Run `yarn start` from the command line, and then navigate to `http://localhost:3000` in your browser.
+
+## Usage
+
+The direction of travel (departure/arrival) can be controlled using the `direction` query parameter.
+
+`http://localhost:3000?direction=departure` for departure times.  
+`http://localhost:3000?direction=arrival` for arrival times.  

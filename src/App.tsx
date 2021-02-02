@@ -2,14 +2,14 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { format, add } from "date-fns";
 
-type Direction = "to" | "from";
+type Direction = "arrival" | "departure";
 
 const urlParams = new URLSearchParams(window.location.search);
-const selectedDirection = (urlParams.get("direction") as Direction) ?? "from";
+const selectedDirection: Direction = (urlParams.get("direction") as Direction) ?? "departure";
 
 const getData = async (direction: Direction) => {
   // Use Cyrville for arrivals
-  const stop = direction === "to" ? "3026" : "3027";
+  const stop = direction === "arrival" ? "3026" : "3027";
 
   const result = await fetch(
     `/v2.0/GetNextTripsForStop?appID=${process.env.REACT_APP_APP_ID}&apiKey=${process.env.REACT_APP_API_KEY}&stopNo=${stop}&routeNo=1&format=json`,
@@ -28,7 +28,7 @@ const getData = async (direction: Direction) => {
   // Sometimes it's an array, sometimes it's not...
   if (Array.isArray(routes)) {
     route = routes.find((r) => {
-      if (direction === "to") {
+      if (direction === "arrival") {
         return r.RouteLabel === "Blair";
       } else {
         return r.RouteLabel === "Tunney's Pasture";
@@ -43,7 +43,7 @@ const getData = async (direction: Direction) => {
   }
 
   const trips: any[] = route.Trips.Trip;
-  if (direction === "from") {
+  if (direction === "departure") {
     return trips.map((trip) => parseInt(trip.AdjustedScheduleTime));
   } else {
     // Add 3 minutes of travel time from Cyrville to Blair
@@ -93,7 +93,7 @@ const App = () => {
   if (updateTime != null && trips.length > 0) {
     return (
       <Container>
-        Next {selectedDirection === "to" ? "Arrival" : "Depature"}:{" "}
+        Next {selectedDirection === "arrival" ? "Arrival" : "Depature"}:{" "}
         {format(add(updateTime, { minutes: trips[0] }), "HH:mm")}
       </Container>
     );
