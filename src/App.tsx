@@ -5,7 +5,8 @@ import { format, add } from "date-fns";
 type Direction = "arrival" | "departure";
 
 const urlParams = new URLSearchParams(window.location.search);
-const selectedDirection: Direction = (urlParams.get("direction") as Direction) ?? "departure";
+const selectedDirection: Direction =
+  (urlParams.get("direction") as Direction) ?? "departure";
 
 const getData = async (direction: Direction) => {
   // Use Cyrville for arrivals
@@ -98,7 +99,12 @@ const App = () => {
       </Container>
     );
   } else {
-    return <Container>No Scheduled Departures</Container>;
+    return (
+      <Container>
+        No Scheduled{" "}
+        {selectedDirection === "arrival" ? "Arrivals" : "Departures"}
+      </Container>
+    );
   }
 };
 
