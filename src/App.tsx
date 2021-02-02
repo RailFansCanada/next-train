@@ -43,7 +43,11 @@ const getData = async (direction: Direction) => {
     return [];
   }
 
-  const trips: any[] = route.Trips.Trip;
+  let trips: any[] = route.Trips.Trip;
+  if (!Array.isArray(trips)) {
+    trips = [trips];
+  }
+
   if (direction === "departure") {
     return trips.map((trip) => parseInt(trip.AdjustedScheduleTime));
   } else {
