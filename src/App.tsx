@@ -18,7 +18,6 @@ const getData = async (direction: Direction) => {
   );
 
   const data = await result.json();
-  console.log(data);
 
   if (data.GetNextTripsForStopResult.Error !== "") {
     return [];
@@ -39,7 +38,7 @@ const getData = async (direction: Direction) => {
     route = routes;
   }
 
-  if (route == null) {
+  if (route?.Trips == null) {
     return [];
   }
 
