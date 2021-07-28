@@ -19,7 +19,7 @@ const getData = async (direction: Direction) => {
 
   const data = await result.json();
 
-  if (data.GetNextTripsForStopResult.Error !== "") {
+  if (data.GetNextTripsForStopResult.error !== "") {
     return [];
   }
 
@@ -48,10 +48,10 @@ const getData = async (direction: Direction) => {
   }
 
   if (direction === "departure") {
-    return trips.map((trip) => parseInt(trip.AdjustedScheduleTime));
+    return trips.map((trip) => parseInt(trip.adjustedScheduleTime));
   } else {
     // Add 3 minutes of travel time from Cyrville to Blair
-    return trips.map((trip) => parseInt(trip.AdjustedScheduleTime) + 3);
+    return trips.map((trip) => parseInt(trip.adjustedScheduleTime) + 3);
   }
 };
 
